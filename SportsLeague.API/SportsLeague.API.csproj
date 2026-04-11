@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SportsLeague.DataAccess\SportsLeague.DataAccess.csproj" />
     <ProjectReference Include="..\SportsLeague.Domain\SportsLeague.Domain.csproj" />
   </ItemGroup>
 
