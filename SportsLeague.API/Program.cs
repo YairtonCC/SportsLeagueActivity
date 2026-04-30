@@ -21,6 +21,7 @@ builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
 builder.Services.AddScoped<IRefereeRepository, RefereeRepository>();
 builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
 builder.Services.AddScoped<ITournamentTeamRepository, TournamentTeamRepository>();
+builder.Services.AddScoped<IMatchRepository, MatchRepository>();
 
 // Nuevos repositorios
 builder.Services.AddScoped<ISponsorRepository, SponsorRepository>();
@@ -31,6 +32,7 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IRefereeService, RefereeService>();
 builder.Services.AddScoped<ITournamentService, TournamentService>();
+builder.Services.AddScoped<IMatchService, MatchService>();
 
 // Nuevo servicio
 builder.Services.AddScoped<ISponsorService, SponsorService>();
@@ -53,6 +55,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
