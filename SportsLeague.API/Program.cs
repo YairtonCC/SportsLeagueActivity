@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SportsLeague.API.Services;
+using SportsLeague.Application.Services;
 using SportsLeague.DataAccess.Context;
 using SportsLeague.DataAccess.Repositories;
 using SportsLeague.DataAccess.Seeders;
@@ -27,10 +28,10 @@ builder.Services.AddScoped<IMatchRepository, MatchRepository>();
 builder.Services.AddScoped<IMatchResultRepository, MatchResultRepository>();
 builder.Services.AddScoped<IGoalRepository, GoalRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
-
-// Nuevos repositorios (Fase 5)
 builder.Services.AddScoped<ISponsorRepository, SponsorRepository>();
 builder.Services.AddScoped<ITournamentSponsorRepository, TournamentSponsorRepository>();
+builder.Services.AddScoped<IMatchLineupRepository, MatchLineupRepository>();
+
 
 // ── Services ──
 builder.Services.AddScoped<ITeamService, TeamService>();
@@ -41,7 +42,7 @@ builder.Services.AddScoped<IMatchService, MatchService>();
 builder.Services.AddScoped<IMatchEventService, MatchEventService>();
 builder.Services.AddScoped<MatchValidationHelper>();
 builder.Services.AddScoped<IStandingsService, StandingsService>();
-
+builder.Services.AddScoped<IMatchLineupService, MatchLineupService>();
 
 // Nuevos servicios (Fase 5)
 builder.Services.AddScoped<ISponsorService, SponsorService>();
@@ -74,7 +75,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
-
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
