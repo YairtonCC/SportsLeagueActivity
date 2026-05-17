@@ -9,5 +9,7 @@
         public string TeamName { get; set; } = string.Empty;
         public bool IsStarter { get; set; }
         public string Position { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

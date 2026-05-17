@@ -1,128 +1,102 @@
-﻿using Microsoft.Extensions.Logging;
-using SportsLeague.Domain.Entities;
+﻿using SportsLeague.Domain.Entities;
 using SportsLeague.Domain.Enums;
-using SportsLeague.Domain.Helpers;
 using SportsLeague.Domain.Interfaces.Repositories;
+using SportsLeague.Domain.Interfaces.Repositories.SportsLeague.Domain.Interfaces.Repositories;
 using SportsLeague.Domain.Interfaces.Services;
 
-namespace SportsLeague.Domain.Services;
-
-public class MatchEventService : IMatchEventService
+namespace SportsLeague.Application.Services
 {
-    private readonly IMatchRepository _matchRepository;
-    private readonly IMatchResultRepository _matchResultRepository;
-    private readonly IGoalRepository _goalRepository;
-    private readonly ICardRepository _cardRepository;
-    private readonly MatchValidationHelper _validationHelper;
-    private readonly ILogger<MatchEventService> _logger;
-
-    public MatchEventService(
-        IMatchRepository matchRepository,
-        IMatchResultRepository matchResultRepository,
-        IGoalRepository goalRepository,
-        ICardRepository cardRepository,
-        MatchValidationHelper validationHelper,
-        ILogger<MatchEventService> logger)
+    public class MatchEventService : IMatchEventService
     {
-        _matchRepository = matchRepository;
-        _matchResultRepository = matchResultRepository;
-        _goalRepository = goalRepository;
-        _cardRepository = cardRepository;
-        _validationHelper = validationHelper;
-        _logger = logger;
-    }
+        private readonly IMatchRepository _matchRepository;
+        private readonly IPlayerRepository _playerRepository;
+        private readonly IMatchEventRepository _eventRepository;
 
-    // ═══ MatchResult ═══
-    public async Task<MatchResult> RegisterResultAsync(int matchId, MatchResult result)
-    {
-        var match = await _matchRepository.GetByIdAsync(matchId);
-        if (match == null)
-            throw new KeyNotFoundException($"No se encontró el partido con ID {matchId}");
+        public MatchEventService(
+            IMatchRepository matchRepository,
+            IPlayerRepository playerRepository,
+            IMatchEventRepository eventRepository)
+        {
+            _matchRepository = matchRepository;
+            _playerRepository = playerRepository;
+            _eventRepository = eventRepository;
+        }
 
-        if (match.Status != MatchStatus.Finished)
-            throw new InvalidOperationException("Solo se puede registrar resultado en partidos finalizados");
+        public async Task<MatchResult> RegisterResultAsync(int matchId, MatchResult result)
+        {
+            var match = await _matchRepository.GetByIdAsync(matchId);
+            if (match == null)
+                throw new KeyNotFoundException($"No se encontró el partido con ID {matchId}");
 
-        var existingResult = await _matchResultRepository.GetByMatchIdAsync(matchId);
-        if (existingResult != null)
-            throw new InvalidOperationException("Este partido ya tiene un resultado registrado");
+            if (match.Status == MatchStatus.Finished)
+                throw new InvalidOperationException("El resultado ya no puede modificarse, el partido está finalizado.");
 
-        if (result.HomeGoals < 0 || result.AwayGoals < 0)
-            throw new ArgumentException("Los goles no pueden ser negativos");
+            match.Result = result;
+            await _matchRepository.UpdateAsync(match);
 
-        result.MatchId = matchId;
+            return match.Result!;
+        }
 
-        _logger.LogInformation("Registrando resultado: Partido {MatchId}, {Home}-{Away}", matchId, result.HomeGoals, result.AwayGoals);
-        return await _matchResultRepository.CreateAsync(result);
-    }
+        public async Task<MatchResult?> GetResultByMatchAsync(int matchId)
+        {
+            var match = await _matchRepository.GetByIdAsync(matchId);
+            return match?.Result;
+        }
 
-    public async Task<MatchResult?> GetResultByMatchAsync(int matchId)
-    {
-        var match = await _matchRepository.GetByIdAsync(matchId);
-        if (match == null)
-            throw new KeyNotFoundException($"No se encontró el partido con ID {matchId}");
+        public async Task<Goal> RegisterGoalAsync(int matchId, Goal goal)
+        {
+            await ValidateEvent(matchId, goal.PlayerId, goal.Minute);
+            await _eventRepository.AddGoalAsync(goal);
+            return goal;
+        }
 
-        return await _matchResultRepository.GetByMatchIdAsync(matchId);
-    }
+        public async Task<IEnumerable<Goal>> GetGoalsByMatchAsync(int matchId)
+        {
+            return await _eventRepository.GetGoalsByMatchAsync(matchId);
+        }
 
-    // ═══ Goals ═══
-    public async Task<Goal> RegisterGoalAsync(int matchId, Goal goal)
-    {
-        var match = await _validationHelper.ValidateMatchForEventAsync(matchId);
-        await _validationHelper.ValidatePlayerInMatchAsync(goal.PlayerId, match);
-        MatchValidationHelper.ValidateMinute(goal.Minute);
+        public async Task DeleteGoalAsync(int goalId)
+        {
+            await _eventRepository.DeleteGoalAsync(goalId);
+        }
 
-        goal.MatchId = matchId;
+        public async Task<Card> RegisterCardAsync(int matchId, Card card)
+        {
+            await ValidateEvent(matchId, card.PlayerId, card.Minute);
+            await _eventRepository.AddCardAsync(card);
+            return card;
+        }
 
-        _logger.LogInformation("Registrando gol: Partido {MatchId}, Jugador {PlayerId}, Minuto {Minute}", matchId, goal.PlayerId, goal.Minute);
-        return await _goalRepository.CreateAsync(goal);
-    }
+        public async Task<IEnumerable<Card>> GetCardsByMatchAsync(int matchId)
+        {
+            return await _eventRepository.GetCardsByMatchAsync(matchId);
+        }
 
-    public async Task<IEnumerable<Goal>> GetGoalsByMatchAsync(int matchId)
-    {
-        var match = await _matchRepository.GetByIdAsync(matchId);
-        if (match == null)
-            throw new KeyNotFoundException($"No se encontró el partido con ID {matchId}");
+        public async Task DeleteCardAsync(int cardId)
+        {
+            await _eventRepository.DeleteCardAsync(cardId);
+        }
 
-        return await _goalRepository.GetByMatchWithDetailsAsync(matchId);
-    }
+        // Validaciones comunes
+        private async Task ValidateEvent(int matchId, int playerId, int minute)
+        {
+            var match = await _matchRepository.GetByIdAsync(matchId);
+            if (match == null)
+                throw new KeyNotFoundException($"No se encontró el partido con ID {matchId}");
 
-    public async Task DeleteGoalAsync(int goalId)
-    {
-        var exists = await _goalRepository.ExistsAsync(goalId);
-        if (!exists)
-            throw new KeyNotFoundException($"No se encontró el gol con ID {goalId}");
+            if (match.Status == MatchStatus.Finished)
+                throw new InvalidOperationException("No se pueden registrar eventos en partidos finalizados.");
 
-        await _goalRepository.DeleteAsync(goalId);
-    }
+            var player = await _playerRepository.GetByIdAsync(playerId);
+            if (player == null)
+                throw new KeyNotFoundException($"No se encontró el jugador con ID {playerId}");
 
-    // ═══ Cards ═══
-    public async Task<Card> RegisterCardAsync(int matchId, Card card)
-    {
-        var match = await _validationHelper.ValidateMatchForEventAsync(matchId);
-        await _validationHelper.ValidatePlayerInMatchAsync(card.PlayerId, match);
-        MatchValidationHelper.ValidateMinute(card.Minute);
+            if (player.TeamId != match.HomeTeamId && player.TeamId != match.AwayTeamId)
+                throw new InvalidOperationException("El jugador no pertenece a los equipos del partido.");
 
-        card.MatchId = matchId;
-
-        _logger.LogInformation("Registrando tarjeta {CardType}: Partido {MatchId}, Jugador {PlayerId}", card.Type, matchId, card.PlayerId);
-        return await _cardRepository.CreateAsync(card);
-    }
-
-    public async Task<IEnumerable<Card>> GetCardsByMatchAsync(int matchId)
-    {
-        var match = await _matchRepository.GetByIdAsync(matchId);
-        if (match == null)
-            throw new KeyNotFoundException($"No se encontró el partido con ID {matchId}");
-
-        return await _cardRepository.GetByMatchWithDetailsAsync(matchId);
-    }
-
-    public async Task DeleteCardAsync(int cardId)
-    {
-        var exists = await _cardRepository.ExistsAsync(cardId);
-        if (!exists)
-            throw new KeyNotFoundException($"No se encontró la tarjeta con ID {cardId}");
-
-        await _cardRepository.DeleteAsync(cardId);
+            if (minute < 0 || minute > 90)
+                throw new ArgumentException("El minuto del evento debe estar entre 0 y 90.", nameof(minute));
+        }
     }
 }
+

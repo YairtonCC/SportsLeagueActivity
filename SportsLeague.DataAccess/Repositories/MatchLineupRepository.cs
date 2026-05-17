@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using SportsLeague.DataAccess.Context;
 using SportsLeague.Domain.Entities;
 using SportsLeague.Domain.Interfaces.Repositories;
@@ -19,7 +18,8 @@ namespace SportsLeague.DataAccess.Repositories
         {
             return await _context.MatchLineups
                 .Include(ml => ml.Player)
-                .ThenInclude(p => p.Team)
+                    .ThenInclude(p => p.Team)
+                .Include(ml => ml.Match)
                 .FirstOrDefaultAsync(ml => ml.Id == id);
         }
 
@@ -27,7 +27,8 @@ namespace SportsLeague.DataAccess.Repositories
         {
             return await _context.MatchLineups
                 .Include(ml => ml.Player)
-                .ThenInclude(p => p.Team)
+                    .ThenInclude(p => p.Team)
+                .Include(ml => ml.Match)
                 .Where(ml => ml.MatchId == matchId)
                 .ToListAsync();
         }
@@ -36,7 +37,8 @@ namespace SportsLeague.DataAccess.Repositories
         {
             return await _context.MatchLineups
                 .Include(ml => ml.Player)
-                .ThenInclude(p => p.Team)
+                    .ThenInclude(p => p.Team)
+                .Include(ml => ml.Match)
                 .Where(ml => ml.MatchId == matchId && ml.Player.TeamId == teamId)
                 .ToListAsync();
         }
@@ -51,7 +53,8 @@ namespace SportsLeague.DataAccess.Repositories
         {
             return await _context.MatchLineups
                 .Include(ml => ml.Player)
-                .ThenInclude(p => p.Team)
+                    .ThenInclude(p => p.Team)
+                .Include(ml => ml.Match)
                 .FirstOrDefaultAsync(ml => ml.MatchId == matchId && ml.PlayerId == playerId);
         }
 
@@ -74,4 +77,3 @@ namespace SportsLeague.DataAccess.Repositories
         }
     }
 }
-

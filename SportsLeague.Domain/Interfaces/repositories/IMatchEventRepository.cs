@@ -1,17 +1,20 @@
 ﻿using SportsLeague.Domain.Entities;
 
-namespace SportsLeague.Domain.Interfaces.Services
+namespace SportsLeague.Domain.Interfaces.Repositories
 {
-    public interface IMatchEventService
+    public interface IMatchEventRepository
     {
-        Task<MatchResult> RegisterResultAsync(int matchId, MatchResult result);
+        // Resultados
+        Task<MatchResult> AddResultAsync(MatchResult result);
         Task<MatchResult?> GetResultByMatchAsync(int matchId);
 
-        Task<Goal> RegisterGoalAsync(int matchId, Goal goal);
+        // Goles
+        Task<Goal> AddGoalAsync(Goal goal);
         Task<IEnumerable<Goal>> GetGoalsByMatchAsync(int matchId);
         Task DeleteGoalAsync(int goalId);
 
-        Task<Card> RegisterCardAsync(int matchId, Card card);
+        // Tarjetas
+        Task<Card> AddCardAsync(Card card);
         Task<IEnumerable<Card>> GetCardsByMatchAsync(int matchId);
         Task DeleteCardAsync(int cardId);
     }

@@ -3,6 +3,7 @@ using SportsLeague.Domain.Entities;
 using SportsLeague.Domain.Enums;
 using SportsLeague.Domain.Interfaces.repositories;
 using SportsLeague.Domain.Interfaces.Repositories;
+using SportsLeague.Domain.Interfaces.Repositories.SportsLeague.Domain.Interfaces.Repositories;
 using SportsLeague.Domain.Interfaces.Services;
 
 namespace SportsLeague.Domain.Services
@@ -84,8 +85,9 @@ namespace SportsLeague.Domain.Services
                 throw new KeyNotFoundException($"No se encontró el partido con ID {id}");
 
             _logger.LogInformation("Eliminando partido con ID: {MatchId}", id);
-            await _matchRepository.DeleteAsync(match);
+            await _matchRepository.DeleteAsync(id); 
         }
+
 
         public async Task UpdateStatusAsync(int id, MatchStatus newStatus)
         {

@@ -1,6 +1,7 @@
 ﻿using SportsLeague.Domain.Entities;
 using SportsLeague.Domain.Enums;
 using SportsLeague.Domain.Interfaces.Repositories;
+using SportsLeague.Domain.Interfaces.Repositories.SportsLeague.Domain.Interfaces.Repositories;
 using SportsLeague.Domain.Interfaces.Services;
 
 namespace SportsLeague.Application.Services
@@ -75,7 +76,10 @@ namespace SportsLeague.Application.Services
             };
 
             await _repository.AddAsync(lineup);
-            return lineup;
+
+            var createdLineup = await _repository.GetByIdAsync(lineup.Id);
+
+            return createdLineup!;
         }
 
         public async Task<IEnumerable<MatchLineup>> GetLineupByMatchAsync(int matchId)

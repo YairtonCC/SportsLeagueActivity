@@ -12,7 +12,7 @@ namespace SportsLeague.Domain.Entities
         // Cambiado de string a enum
         public MatchStatus Status { get; set; }
 
-        // Relaciones existentes
+        // Relaciones principales
         public int TournamentId { get; set; }
         public Tournament Tournament { get; set; } = null!;
         public int HomeTeamId { get; set; }
@@ -21,10 +21,14 @@ namespace SportsLeague.Domain.Entities
         public Team AwayTeam { get; set; } = null!;
         public int RefereeId { get; set; }
         public Referee Referee { get; set; } = null!;
-        public MatchResult? MatchResult { get; set; }
 
+        // Relación 1–1 con resultado
+        public MatchResult? Result { get; set; }
+
+        // Colecciones de eventos
         public ICollection<Goal> Goals { get; set; } = new List<Goal>();
         public ICollection<Card> Cards { get; set; } = new List<Card>();
         public ICollection<MatchLineup> MatchLineups { get; set; } = new List<MatchLineup>();
     }
 }
+

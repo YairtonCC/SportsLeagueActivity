@@ -1,20 +1,25 @@
 ﻿using SportsLeague.Domain.Entities;
-using SportsLeague.Domain.Interfaces.repositories;
 
-
-namespace SportsLeague.Domain.Interfaces.Repositories;
-
-
-public interface IMatchRepository : IGenericRepository<Match>
-
+namespace SportsLeague.Domain.Interfaces.Repositories
 {
 
-    Task<IEnumerable<Match>> GetByTournamentAsync(int tournamentId);
 
-    Task<IEnumerable<Match>> GetByTeamAsync(int teamId);
+    namespace SportsLeague.Domain.Interfaces.Repositories
+    {
+        public interface IMatchRepository
+        {
+            Task<Match?> GetByIdAsync(int id);
+            Task<Match?> GetByIdWithDetailsAsync(int id);
+            Task<IEnumerable<Match>> GetAllAsync();
+            Task<IEnumerable<Match>> GetByTournamentAsync(int tournamentId);
+            Task<IEnumerable<Match>> GetByTournamentWithDetailsAsync(int tournamentId);
 
-    Task<Match?> GetByIdWithDetailsAsync(int id);
+            Task<Match> CreateAsync(Match match);  
+            Task UpdateAsync(Match match);         
+            Task DeleteAsync(int id);               
+            Task<bool> ExistsAsync(int id);        
+        }
+    }
 
-    Task<IEnumerable<Match>> GetByTournamentWithDetailsAsync(int tournamentId);
 
 }
