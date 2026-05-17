@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using SportsLeague.API.Services;
 using SportsLeague.Application.Services;
@@ -32,7 +33,6 @@ builder.Services.AddScoped<ISponsorRepository, SponsorRepository>();
 builder.Services.AddScoped<ITournamentSponsorRepository, TournamentSponsorRepository>();
 builder.Services.AddScoped<IMatchLineupRepository, MatchLineupRepository>();
 
-
 // ── Services ──
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
@@ -43,8 +43,6 @@ builder.Services.AddScoped<IMatchEventService, MatchEventService>();
 builder.Services.AddScoped<MatchValidationHelper>();
 builder.Services.AddScoped<IStandingsService, StandingsService>();
 builder.Services.AddScoped<IMatchLineupService, MatchLineupService>();
-
-// Nuevos servicios (Fase 5)
 builder.Services.AddScoped<ISponsorService, SponsorService>();
 
 // ── AutoMapper ──
@@ -59,7 +57,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// ── Data Seeder (Fase 5.1) ──
+// ── Data Seeder ──
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<LeagueDbContext>();
@@ -74,10 +72,30 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// ── Exception Handler ──
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var error = exceptionHandlerPathFeature?.Error;
+
+        if (error is InvalidOperationException)
+            context.Response.StatusCode = StatusCodes.Status409Conflict;
+        else if (error is KeyNotFoundException)
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+        else if (error is ArgumentException)
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        else
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+        await context.Response.WriteAsJsonAsync(new { error = error?.Message });
+    });
+});
+
 app.MapGet("/", () => Results.Redirect("/swagger"));
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-

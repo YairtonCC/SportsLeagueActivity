@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SportsLeague.DataAccess.Context;
 using SportsLeague.Domain.Entities;
 using SportsLeague.Domain.Interfaces.Repositories;
@@ -17,15 +18,16 @@ namespace SportsLeague.DataAccess.Repositories
         public async Task<MatchLineup?> GetByIdAsync(int id)
         {
             return await _context.MatchLineups
-                .Include(ml => ml.Player).ThenInclude(p => p.Team)
-                .Include(ml => ml.Match)
+                .Include(ml => ml.Player)
+                .ThenInclude(p => p.Team)
                 .FirstOrDefaultAsync(ml => ml.Id == id);
         }
 
         public async Task<IEnumerable<MatchLineup>> GetByMatchAsync(int matchId)
         {
             return await _context.MatchLineups
-                .Include(ml => ml.Player).ThenInclude(p => p.Team)
+                .Include(ml => ml.Player)
+                .ThenInclude(p => p.Team)
                 .Where(ml => ml.MatchId == matchId)
                 .ToListAsync();
         }
@@ -33,7 +35,8 @@ namespace SportsLeague.DataAccess.Repositories
         public async Task<IEnumerable<MatchLineup>> GetByMatchAndTeamAsync(int matchId, int teamId)
         {
             return await _context.MatchLineups
-                .Include(ml => ml.Player).ThenInclude(p => p.Team)
+                .Include(ml => ml.Player)
+                .ThenInclude(p => p.Team)
                 .Where(ml => ml.MatchId == matchId && ml.Player.TeamId == teamId)
                 .ToListAsync();
         }
@@ -44,9 +47,23 @@ namespace SportsLeague.DataAccess.Repositories
                 .AnyAsync(ml => ml.MatchId == matchId && ml.PlayerId == playerId);
         }
 
+        public async Task<MatchLineup?> GetByMatchAndPlayerAsync(int matchId, int playerId)
+        {
+            return await _context.MatchLineups
+                .Include(ml => ml.Player)
+                .ThenInclude(p => p.Team)
+                .FirstOrDefaultAsync(ml => ml.MatchId == matchId && ml.PlayerId == playerId);
+        }
+
+        public async Task<int> CountStartersByMatchAndTeamAsync(int matchId, int teamId)
+        {
+            return await _context.MatchLineups
+                .CountAsync(ml => ml.MatchId == matchId && ml.IsStarter && ml.Player.TeamId == teamId);
+        }
+
         public async Task AddAsync(MatchLineup lineup)
         {
-            _context.MatchLineups.Add(lineup);
+            await _context.MatchLineups.AddAsync(lineup);
             await _context.SaveChangesAsync();
         }
 
@@ -57,3 +74,4 @@ namespace SportsLeague.DataAccess.Repositories
         }
     }
 }
+

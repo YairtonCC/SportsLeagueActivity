@@ -3,7 +3,7 @@ using SportsLeague.Domain.Entities;
 using SportsLeague.Domain.Enums;
 using SportsLeague.Domain.Interfaces.repositories;
 using SportsLeague.Domain.Interfaces.Repositories;
-using SportsLeague.Domain.Interfaces.Services; 
+using SportsLeague.Domain.Interfaces.Services;
 
 namespace SportsLeague.Domain.Services
 {
@@ -32,7 +32,6 @@ namespace SportsLeague.Domain.Services
             _logger = logger;
         }
 
-        // Métodos de IMatchService (ya implementados en tu código)
         public async Task<IEnumerable<Match>> GetAllByTournamentAsync(int tournamentId)
         {
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId);
@@ -44,37 +43,60 @@ namespace SportsLeague.Domain.Services
 
         public async Task<Match?> GetByIdAsync(int id)
         {
-            _logger.LogInformation("Retrieving match with ID: {MatchId}", id);
+            _logger.LogInformation("Consultando partido con ID: {MatchId}", id);
             return await _matchRepository.GetByIdWithDetailsAsync(id);
         }
 
         public async Task<Match> CreateAsync(Match match)
         {
-            // tu lógica de validación y creación...
+            var tournament = await _tournamentRepository.GetByIdAsync(match.TournamentId);
+            if (tournament == null)
+                throw new KeyNotFoundException($"No se encontró el torneo con ID {match.TournamentId}");
+
+            var homeTeam = await _teamRepository.GetByIdAsync(match.HomeTeamId);
+            var awayTeam = await _teamRepository.GetByIdAsync(match.AwayTeamId);
+            if (homeTeam == null || awayTeam == null)
+                throw new KeyNotFoundException("Uno de los equipos no existe");
+
+            var referee = await _refereeRepository.GetByIdAsync(match.RefereeId);
+            if (referee == null)
+                throw new KeyNotFoundException($"No se encontró el árbitro con ID {match.RefereeId}");
+
+            _logger.LogInformation("Creando partido en torneo {TournamentId}", match.TournamentId);
             return await _matchRepository.CreateAsync(match);
         }
 
         public async Task UpdateAsync(int id, Match match)
         {
-            // tu lógica de actualización...
+            var existing = await _matchRepository.GetByIdAsync(id);
+            if (existing == null)
+                throw new KeyNotFoundException($"No se encontró el partido con ID {id}");
+
+            match.Id = id;
+            _logger.LogInformation("Actualizando partido con ID: {MatchId}", id);
             await _matchRepository.UpdateAsync(match);
         }
 
         public async Task DeleteAsync(int id)
         {
-            // tu lógica de eliminación...
-            await _matchRepository.DeleteAsync(id);
+            var match = await _matchRepository.GetByIdAsync(id);
+            if (match == null)
+                throw new KeyNotFoundException($"No se encontró el partido con ID {id}");
+
+            _logger.LogInformation("Eliminando partido con ID: {MatchId}", id);
+            await _matchRepository.DeleteAsync(match);
         }
 
         public async Task UpdateStatusAsync(int id, MatchStatus newStatus)
         {
-            // tu lógica de actualización de estado...
             var match = await _matchRepository.GetByIdAsync(id);
             if (match == null)
                 throw new KeyNotFoundException($"No se encontró el partido con ID {id}");
 
             match.Status = newStatus;
+            _logger.LogInformation("Actualizando estado del partido {MatchId} a {Status}", id, newStatus);
             await _matchRepository.UpdateAsync(match);
         }
     }
 }
+
