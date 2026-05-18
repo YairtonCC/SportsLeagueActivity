@@ -22,6 +22,9 @@ namespace SportsLeague.DataAccess.Context
         public DbSet<Goal> Goals => Set<Goal>();
         public DbSet<Card> Cards => Set<Card>();
         public DbSet<MatchLineup> MatchLineups => Set<MatchLineup>();
+        public DbSet<MatchEvent> MatchEvents => Set<MatchEvent>();
+
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -227,7 +230,7 @@ entity.HasOne(m => m.Referee)
 
                 // Relación 1:1 con Match
                 entity.HasOne(mr => mr.Match)
-                      .WithOne(m => m.MatchResult)
+                      .WithOne(m => m.Result)
                       .HasForeignKey<MatchResult>(mr => mr.MatchId)
                       .OnDelete(DeleteBehavior.Cascade);
 

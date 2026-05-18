@@ -49,10 +49,10 @@ namespace SportsLeague.Application.Services
             // 6. Validar máximo 11 titulares por equipo
             if (isStarter)
             {
-                if (player.TeamId == null)
+                if (player.TeamId == 0)
                     throw new InvalidOperationException("El jugador no tiene equipo asignado.");
 
-                var startersCount = await _repository.CountStartersByMatchAndTeamAsync(matchId, player.TeamId.Value);
+                var startersCount = await _repository.CountStartersByMatchAndTeamAsync(matchId, player.TeamId);
                 if (startersCount >= 11)
                     throw new InvalidOperationException("No se permiten más de 11 titulares en el mismo equipo.");
             }

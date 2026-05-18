@@ -13,9 +13,8 @@
         public Sponsor Sponsor { get; set; } = null!;
 
         // Propiedades que tu DbContext espera
-        public decimal ContractAmount { get; set; }   // Monto del contrato
-        public DateTime JoinedAt { get; set; }        // Fecha en que se unió
+        public decimal ContractAmount { get; set; }   
+        public DateTime JoinedAt { get; set; }        
 
-        // Auditoría heredada de AuditBase: CreatedAt, UpdatedAt, etc.
     }
 }
