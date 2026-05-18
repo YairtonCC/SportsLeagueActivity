@@ -8,9 +8,9 @@
         public bool IsStarter { get; set; }
         public string Position { get; set; } = string.Empty;
 
-        // Propiedades de auditoría
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
+      
+        public DateTime CreatedAt { get; set; } // Fecha de creación del registro
+        public DateTime? UpdatedAt { get; set; }  // Fecha de última actualización
 
         // Relaciones de navegación
         public Match Match { get; set; } = null!;
