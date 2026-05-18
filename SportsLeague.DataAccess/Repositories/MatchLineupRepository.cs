@@ -61,7 +61,11 @@ namespace SportsLeague.DataAccess.Repositories
         public async Task<int> CountStartersByMatchAndTeamAsync(int matchId, int teamId)
         {
             return await _context.MatchLineups
-                .CountAsync(ml => ml.MatchId == matchId && ml.IsStarter && ml.Player.TeamId == teamId);
+                .Include(ml => ml.Player) 
+                .Where(ml => ml.MatchId == matchId
+                             && ml.IsStarter
+                             && ml.Player.TeamId == teamId)
+                .CountAsync();
         }
 
         public async Task AddAsync(MatchLineup lineup)
@@ -77,3 +81,4 @@ namespace SportsLeague.DataAccess.Repositories
         }
     }
 }
+

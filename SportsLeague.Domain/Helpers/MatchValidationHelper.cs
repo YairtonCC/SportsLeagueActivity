@@ -1,6 +1,7 @@
 ﻿using SportsLeague.Domain.Entities;
 using SportsLeague.Domain.Enums;
 using SportsLeague.Domain.Interfaces.Repositories;
+using SportsLeague.Domain.Interfaces.Repositories.SportsLeague.Domain.Interfaces.Repositories;
 
 namespace SportsLeague.Domain.Helpers;
 

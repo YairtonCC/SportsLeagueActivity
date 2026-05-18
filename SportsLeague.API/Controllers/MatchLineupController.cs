@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SportsLeague.API.DTOs.Request;
 using SportsLeague.API.DTOs.Response;
-using SportsLeague.Domain.Entities;
 using SportsLeague.Domain.Interfaces.Services;
 
 namespace SportsLeague.API.Controllers
@@ -32,6 +31,7 @@ namespace SportsLeague.API.Controllers
                 request.IsStarter,
                 request.Position);
 
+            // Aquí el servicio debe devolver el objeto reconsultado con Player y Team incluidos
             var response = _mapper.Map<MatchLineupResponseDTO>(lineup);
             return CreatedAtAction(nameof(GetLineupByMatch), new { matchId }, response);
         }
@@ -55,10 +55,10 @@ namespace SportsLeague.API.Controllers
         }
 
         // ── DELETE: Eliminar jugador de la alineación ──
-        [HttpDelete("{lineupId}")]
-        public async Task<IActionResult> DeleteLineup(int matchId, int lineupId)
+        [HttpDelete("player/{playerId}")]
+        public async Task<IActionResult> DeleteLineup(int matchId, int playerId)
         {
-            await _lineupService.DeleteLineupAsync(matchId, lineupId);
+            await _lineupService.DeleteLineupAsync(matchId, playerId);
             return NoContent();
         }
     }

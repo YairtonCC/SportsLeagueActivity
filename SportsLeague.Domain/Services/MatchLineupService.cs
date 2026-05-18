@@ -24,48 +24,51 @@ namespace SportsLeague.Application.Services
 
         public async Task<MatchLineup> AddPlayerToLineupAsync(int matchId, int playerId, bool isStarter, string position)
         {
-            // Validar duplicado
-            var exists = await _repository.ExistsByMatchAndPlayerAsync(matchId, playerId);
-            if (exists)
+            // 1. Validar duplicado
+            if (await _repository.ExistsByMatchAndPlayerAsync(matchId, playerId))
                 throw new InvalidOperationException("El jugador ya está registrado en la alineación de este partido.");
 
-            // Validar jugador existente
+            // 2. Validar jugador existente
             var player = await _playerRepository.GetByIdAsync(playerId);
             if (player == null)
                 throw new KeyNotFoundException($"No se encontró el jugador con ID {playerId}");
 
-            // Validar partido existente
+            // 3. Validar partido existente
             var match = await _matchRepository.GetByIdAsync(matchId);
             if (match == null)
                 throw new KeyNotFoundException($"No se encontró el partido con ID {matchId}");
 
-            // Validar estado del partido
+            // 4. Validar estado del partido
             if (match.Status == MatchStatus.Finished)
                 throw new InvalidOperationException("No se pueden modificar alineaciones de partidos finalizados.");
 
-            // Validar que el jugador pertenezca a los equipos del partido
+            // 5. Validar que el jugador pertenezca a los equipos del partido
             if (player.TeamId != match.HomeTeamId && player.TeamId != match.AwayTeamId)
                 throw new InvalidOperationException("El jugador no pertenece a los equipos del partido.");
 
-            // Validar máximo 11 titulares por equipo
+            // 6. Validar máximo 11 titulares por equipo
             if (isStarter)
             {
-                var startersCount = await _repository.CountStartersByMatchAndTeamAsync(matchId, player.TeamId);
+                if (player.TeamId == null)
+                    throw new InvalidOperationException("El jugador no tiene equipo asignado.");
+
+                var startersCount = await _repository.CountStartersByMatchAndTeamAsync(matchId, player.TeamId.Value);
                 if (startersCount >= 11)
-                    throw new InvalidOperationException("No se permiten más de 11 titulares.");
+                    throw new InvalidOperationException("No se permiten más de 11 titulares en el mismo equipo.");
             }
 
-            // Validar posición obligatoria
+            // 7. Validar posición obligatoria
             if (string.IsNullOrWhiteSpace(position))
                 throw new ArgumentException("La posición es obligatoria.", nameof(position));
 
-            // Validar posición válida
+            // 8. Validar posición válida
             var posicionesValidas = new[] { "Goalkeeper", "Defender", "Midfielder", "Forward" };
             if (!posicionesValidas.Contains(position))
                 throw new ArgumentException(
                     $"La posición '{position}' no es válida. Debe ser Goalkeeper, Defender, Midfielder o Forward.",
                     nameof(position));
 
+            // 9. Crear alineación
             var lineup = new MatchLineup
             {
                 MatchId = matchId,
@@ -77,8 +80,8 @@ namespace SportsLeague.Application.Services
 
             await _repository.AddAsync(lineup);
 
+            // 10. Reconsultar con relaciones incluidas
             var createdLineup = await _repository.GetByIdAsync(lineup.Id);
-
             return createdLineup!;
         }
 
@@ -102,3 +105,4 @@ namespace SportsLeague.Application.Services
         }
     }
 }
+
