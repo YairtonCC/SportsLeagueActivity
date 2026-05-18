@@ -9,7 +9,6 @@ namespace SportsLeague.Domain.Interfaces.repositories
 public interface IGenericRepository<T> where T : AuditBase
 
     {
-
         Task<IEnumerable<T>> GetAllAsync();
 
         Task<T?> GetByIdAsync(int id);
@@ -18,9 +17,12 @@ public interface IGenericRepository<T> where T : AuditBase
 
         Task UpdateAsync(T entity);
 
+        // Eliminar por Id
         Task DeleteAsync(int id);
 
-        Task<bool> ExistsAsync(int id);
+        // Eliminar por entidad
+        Task DeleteAsync(T entity);
 
+        Task<bool> ExistsAsync(int id);
     }
 }

@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using SportsLeague.Domain.Entities;
+using SportsLeague.Domain.Interfaces.repositories;
 
-namespace SportsLeague.Domain.Interfaces.repositories
+namespace SportsLeague.Domain.Interfaces.Repositories
 {
-    internal class ITournamentSponsorRepository
+    public interface ITournamentSponsorRepository : IGenericRepository<TournamentSponsor>
     {
+        Task<IEnumerable<TournamentSponsor>> GetByTournamentIdAsync(int tournamentId);
     }
 }

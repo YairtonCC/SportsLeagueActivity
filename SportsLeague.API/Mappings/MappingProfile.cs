@@ -16,9 +16,8 @@ namespace SportsLeague.API.Mappings
             // ── Player mappings ──
             CreateMap<PlayerRequestDTO, Player>();
             CreateMap<Player, PlayerResponseDTO>()
-                .ForMember(
-                    dest => dest.TeamName,
-                    opt => opt.MapFrom(src => src.Team.Name));
+                .ForMember(dest => dest.TeamName,
+                    opt => opt.MapFrom(src => src.Team != null ? src.Team.Name : string.Empty));
 
             // ── Referee mappings ──
             CreateMap<RefereeRequestDTO, Referee>();
@@ -27,8 +26,7 @@ namespace SportsLeague.API.Mappings
             // ── Tournament mappings ──
             CreateMap<TournamentRequestDTO, Tournament>();
             CreateMap<Tournament, TournamentResponseDTO>()
-                .ForMember(
-                    dest => dest.TeamsCount,
+                .ForMember(dest => dest.TeamsCount,
                     opt => opt.MapFrom(src =>
                         src.TournamentTeams != null ? src.TournamentTeams.Count : 0));
 
@@ -39,8 +37,56 @@ namespace SportsLeague.API.Mappings
             // ── TournamentSponsor mappings ──
             CreateMap<TournamentSponsorRequestDTO, TournamentSponsor>();
             CreateMap<TournamentSponsor, TournamentSponsorResponseDTO>()
-                .ForMember(dest => dest.TournamentName, opt => opt.MapFrom(src => src.Tournament.Name))
-                .ForMember(dest => dest.SponsorName, opt => opt.MapFrom(src => src.Sponsor.Name));
+                .ForMember(dest => dest.TournamentName,
+                    opt => opt.MapFrom(src => src.Tournament != null ? src.Tournament.Name : string.Empty))
+                .ForMember(dest => dest.SponsorName,
+                    opt => opt.MapFrom(src => src.Sponsor != null ? src.Sponsor.Name : string.Empty));
+
+            // ── Match mappings ──
+            CreateMap<MatchRequestDTO, Match>();
+            CreateMap<Match, MatchResponseDTO>()
+                .ForMember(dest => dest.TournamentName,
+                    opt => opt.MapFrom(src => src.Tournament != null ? src.Tournament.Name : string.Empty))
+                .ForMember(dest => dest.HomeTeamName,
+                    opt => opt.MapFrom(src => src.HomeTeam != null ? src.HomeTeam.Name : string.Empty))
+                .ForMember(dest => dest.AwayTeamName,
+                    opt => opt.MapFrom(src => src.AwayTeam != null ? src.AwayTeam.Name : string.Empty))
+                .ForMember(dest => dest.RefereeFullName,
+                    opt => opt.MapFrom(src => src.Referee != null
+                        ? src.Referee.FirstName + " " + src.Referee.LastName
+                        : string.Empty));
+
+            // ── MatchResult mappings ──
+            CreateMap<MatchResultRequestDTO, MatchResult>();
+            CreateMap<MatchResult, MatchResultResponseDTO>();
+
+            // ── Goal mappings ──
+            CreateMap<GoalRequestDTO, Goal>();
+            CreateMap<Goal, GoalResponseDTO>()
+                .ForMember(dest => dest.PlayerName,
+                    opt => opt.MapFrom(src => src.Player != null
+                        ? src.Player.FirstName + " " + src.Player.LastName
+                        : string.Empty));
+
+            // ── Card mappings ──
+            CreateMap<CardRequestDTO, Card>();
+            CreateMap<Card, CardResponseDTO>()
+                .ForMember(dest => dest.PlayerName,
+                    opt => opt.MapFrom(src => src.Player != null
+                        ? src.Player.FirstName + " " + src.Player.LastName
+                        : string.Empty));
+
+            // ── MatchLineup mappings ──
+            CreateMap<MatchLineupRequestDTO, MatchLineup>();
+            CreateMap<MatchLineup, MatchLineupResponseDTO>()
+                .ForMember(dest => dest.PlayerName,
+                    opt => opt.MapFrom(src => src.Player != null
+                        ? src.Player.FirstName + " " + src.Player.LastName
+                        : string.Empty))
+                .ForMember(dest => dest.TeamName,
+                    opt => opt.MapFrom(src => src.Player != null && src.Player.Team != null
+                        ? src.Player.Team.Name
+                        : string.Empty));
         }
     }
 }
